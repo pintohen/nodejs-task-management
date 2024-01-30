@@ -5,6 +5,7 @@ import config from '../config';
 import express from 'express';
 
 import Logger from './loaders/logger';
+import * as process from 'process';
 
 async function startServer() {
   const app = express();
@@ -16,6 +17,10 @@ async function startServer() {
    * So we are using good old require.
    **/
   await require('./loaders').default({ expressApp: app });
+
+  if(process.argv.includes('--bootstrap-only')) {
+    process.exit(0);
+  }
 
   app.listen(config.port, () => {
     Logger.info(`

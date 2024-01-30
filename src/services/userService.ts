@@ -8,17 +8,17 @@ import { randomBytes } from 'crypto';
 //import MailerService from './mailer.ts.bak';
 
 import IUserService from '../services/IServices/IUserService';
-import { UserMap } from "../mappers/UserMap";
+import { UserMapper } from "../mappers/UserMapper";
 import { IUserDTO } from '../dto/IUserDTO';
 
-import IUserRepo from './IRepos/IUserRepo';
-import IRoleRepo from './IRepos/IRoleRepo';
+import IUserRepo from '@/repos/IRepos/IUserRepo';
+import IRoleRepo from '@/repos/IRepos/IRoleRepo';
 
-import { User } from '../domain/user';
-import { UserPassword } from '../domain/userPassword';
-import { UserEmail } from '../domain/userEmail';
+import { User } from '../domain/user/user';
+import { UserPassword } from '../domain/user/userPassword';
+import { UserEmail } from '../domain/user/userEmail';
 
-import { Role } from '../domain/role';
+import { Role } from '../domain/role/role';
 
 import { Result } from "../core/logic/Result";
 import winston from 'winston';
@@ -37,7 +37,7 @@ export default class UserService implements IUserService{
     try {
       const userDocument = await this.userRepo.findByEmail( userDTO.email );
       const found = !!userDocument;
-  
+
       if (found) {
         return Result.fail<{userDTO: IUserDTO, token: string}>("User already exists with email=" + userDTO.email);
       }
@@ -58,7 +58,7 @@ export default class UserService implements IUserService{
        * watches every API call and if it spots a 'password' and 'email' property then
        * it decides to steal them!? Would you even notice that? I wouldn't :/
        */
-      
+
 
       const salt = randomBytes(32);
       this.logger.silly('Hashing password');
@@ -91,7 +91,8 @@ export default class UserService implements IUserService{
       const userResult = userOrError.getValue();
 
       this.logger.silly('Generating JWT');
-      const token = this.generateToken(userResult);
+      const object = { email: userDTO.email, password: userDTO.password };
+      const token = this.generateToken(object);
 
       this.logger.silly('Sending welcome email');
       //await this.mailer.SendWelcomeEmail(userResult);
@@ -99,7 +100,7 @@ export default class UserService implements IUserService{
       //this.eventDispatcher.dispatch(events.user.signUp, { user: userResult });
 
       await this.userRepo.save(userResult);
-      const userDTOResult = UserMap.toDTO( userResult ) as IUserDTO;
+      const userDTOResult = UserMapper.toDTO( userResult ) as IUserDTO;
       return Result.ok<{userDTO: IUserDTO, token: string}>( {userDTO: userDTOResult, token: token} )
 
     } catch (e) {
@@ -127,9 +128,11 @@ export default class UserService implements IUserService{
     if (validPassword) {
       this.logger.silly('Password is valid!');
       this.logger.silly('Generating JWT');
-      const token = this.generateToken(user) as string;
+      const object = { email: email, password: password };
 
-      const userDTO = UserMap.toDTO( user ) as IUserDTO;
+      const token = this.generateToken(object) as string;
+
+      const userDTO = UserMapper.toDTO( user ) as IUserDTO;
       return Result.ok<{userDTO: IUserDTO, token: string}>( {userDTO: userDTO, token: token} );
     } else {
       logger.debug("Invalid Password");
@@ -137,7 +140,7 @@ export default class UserService implements IUserService{
     }
   }
 
-  private generateToken(user: User) {
+  private generateToken(user: any) {
     const logger = Container.get('logger') as winston.Logger;
 
     const today = new Date();
@@ -153,26 +156,10 @@ export default class UserService implements IUserService{
      * because it doesn't have _the secret_ to sign it
      * more information here: https://softwareontheroad.com/you-dont-need-passport
      */
-    this.logger.silly(`Sign JWT for userId: ${user.id.toString()}`);
 
-    const id = user.id.toString();
-    const email = user.email.value;
-    const firstName = user.firstName;
-    const lastName = user.lastName;
-    const role = user.role.id.toString();
-    logger.debug(`id: ${id}`);
-    logger.debug(`email: ${email}`);
-    logger.debug(`firstName: ${firstName}`);
-    logger.debug(`lastName: ${lastName}`);
-    logger.debug(`role: ${role}`);
-    
     return jwt.sign(
       {
-        id: id,
-        email: email, // We are gonna use this in the middleware 'isAuth'
-        role: role,
-        firstName: firstName,
-        lastName: lastName,
+        ...user,
         exp: exp.getTime() / 1000,
       },
       config.jwtSecret,
@@ -192,5 +179,4 @@ export default class UserService implements IUserService{
       return Result.fail<Role>("Couldn't find role by id=" + roleId);
     }
   }
-
 }

@@ -4,11 +4,10 @@ import { Container } from 'typedi';
 import AuthService from '../../services/userService';
 import { IUserDTO } from '../../dto/IUserDTO';
 
-import middlewares from '../middlewares';
+import middlewares from '../middlewares/auth';
 import { celebrate, Joi } from 'celebrate';
 import winston = require('winston');
 
-var user_controller = require('../../controllers/userController');
 
 const route = Router();
 
@@ -38,7 +37,7 @@ export default (app: Router) => {
           logger.debug(userOrError.errorValue())
           return res.status(401).send(userOrError.errorValue());
         }
-    
+
         const {userDTO, token} = userOrError.getValue();
 
         return res.status(201).json({ userDTO, token });
@@ -64,7 +63,7 @@ export default (app: Router) => {
         const { email, password } = req.body;
         const authServiceInstance = Container.get(AuthService);
         const result = await authServiceInstance.SignIn(email, password);
-        
+
         if( result.isFailure )
           return res.json().status(403);
 
@@ -78,23 +77,28 @@ export default (app: Router) => {
     },
   );
 
-  /**
-   * @TODO Let's leave this as a place holder for now
-   * The reason for a logout route could be deleting a 'push notification token'
-   * so the device stops receiving push notifications after logout.
-   *
-   * Another use case for advance/enterprise apps, you can store a record of the jwt token
-   * emitted for the session and add it to a black list.
-   * It's really annoying to develop that but if you had to, please use Redis as your data store
-   */
-  route.post('/logout', (req: Request, res: Response, next: NextFunction) => {
-    const logger = Container.get('logger') as winston.Logger;
-    logger.debug('Calling Sign-Out endpoint with body: %o', req.body)
+  route.get('/login-by-token', middlewares.isAuth, middlewares.attachCurrentUser, async (req: Request, res: Response, next: NextFunction) => {
     try {
-      //@TODO AuthService.Logout(req.user) do some clever stuff
-      return res.status(200).end();
+      const authServiceInstance = Container.get(AuthService);
+      if(!req.auth )
+        return res.status(401).end('No token provided');
+
+      if(!req.auth.email || !req.auth.password || !req.auth.exp)
+        return res.status(401).end('Invalid Token');
+
+      const expireDate = new Date(req.auth.exp * 1000);
+
+      if( expireDate < new Date() )
+        return res.status(401).end('Token expired');
+
+      const result = await authServiceInstance.SignIn(req.auth.email, req.auth.password);
+
+      if( result.isFailure )
+        return res.status(401).end('Invalid Token');
+
+      return res.status(200).json({ user: req.auth });
     } catch (e) {
-      logger.error('🔥 error %o', e);
+      console.log(e);
       return next(e);
     }
   });

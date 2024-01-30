@@ -1,6 +1,6 @@
 import { Router, Request, Response, NextFunction } from 'express';
 
-import middlewares from '../middlewares';
+import middlewares from '../middlewares/auth';
 
 var user_controller = require('../../controllers/userController');
 

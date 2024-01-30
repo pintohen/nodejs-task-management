@@ -1,9 +1,9 @@
-import { IUserPersistence } from '../../dataschema/IUserPersistence';
+import { IUserPersistence } from '@/persistence/dataschema/IUserPersistence';
 import mongoose from 'mongoose';
 
 const User = new mongoose.Schema(
   {
-    domainId: { 
+    domainId: {
       type: String,
       unique: true
     },
@@ -22,7 +22,7 @@ const User = new mongoose.Schema(
 
     email: {
       type: String,
-      lowercase: true,  
+      lowercase: true,
       unique: true,
       index: true,
     },

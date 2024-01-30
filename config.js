@@ -45,7 +45,11 @@ export default {
     role: {
       name: "RoleController",
       path: "../controllers/roleController"
-    }
+    },
+    task: {
+      name: "TaskController",
+      path: "../controllers/taskController"
+    },
   },
 
   repos: {
@@ -56,13 +60,36 @@ export default {
     user: {
       name: "UserRepo",
       path: "../repos/userRepo"
-    }
+    },
+    task: {
+      name: "TaskRepo",
+      path: "../repos/taskRepo"
+    },
   },
 
   services: {
     role: {
       name: "RoleService",
       path: "../services/roleService"
-    }
+    },
+    task: {
+      name: "TaskService",
+      path: "../services/taskService"
+    },
   },
+
+  schema: {
+    user: {
+      name: "userSchema",
+      path: "../persistence/schemas/userSchema"
+    },
+    role: {
+      name: "roleSchema",
+      path: "../persistence/schemas/roleSchema"
+    },
+    task: {
+      name: "taskSchema",
+      path: "../persistence/schemas/taskSchema"
+    },
+  }
 };

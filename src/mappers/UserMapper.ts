@@ -4,19 +4,19 @@ import { Mapper } from "../core/infra/Mapper";
 
 import {IUserDTO} from "../dto/IUserDTO";
 
-import { User } from "../domain/user";
+import { User } from "../domain/user/user";
 import { UniqueEntityID } from "../core/domain/UniqueEntityID";
 
-import { UserEmail } from "../domain/userEmail";
-import { UserPassword } from "../domain/userPassword";
+import { UserEmail } from "../domain/user/userEmail";
+import { UserPassword } from "../domain/user/userPassword";
 
 import RoleRepo from "../repos/roleRepo";
 
-export class UserMap extends Mapper<User> {
+export class UserMapper extends Mapper<User> {
 
   public static toDTO( user: User): IUserDTO {
     return {
-      //id: user.id.toString(),
+      id: user.id.toString(),
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email.value,
@@ -40,7 +40,7 @@ export class UserMap extends Mapper<User> {
     }, new UniqueEntityID(raw.domainId))
 
     userOrError.isFailure ? console.log(userOrError.error) : '';
-    
+
     return userOrError.isSuccess ? userOrError.getValue() : null;
   }
 
@@ -54,5 +54,15 @@ export class UserMap extends Mapper<User> {
       role: user.role.id.toValue(),
     }
     return a;
+  }
+
+  public static toResponse (user: User): any {
+    return {
+      id: user.id.toString(),
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email.value,
+      role: user.role.name,
+    };
   }
 }

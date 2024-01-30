@@ -1,11 +1,11 @@
-import { AggregateRoot } from "../core/domain/AggregateRoot";
-import { UniqueEntityID } from "../core/domain/UniqueEntityID";
-import { Result } from "../core/logic/Result";
+import { AggregateRoot } from "../../core/domain/AggregateRoot";
+import { UniqueEntityID } from "../../core/domain/UniqueEntityID";
+import { Result } from "../../core/logic/Result";
 import { UserId } from "./userId";
 import { UserEmail } from "./userEmail";
-import { Role } from "../domain/role";
+import { Role } from "../role/role";
 import { UserPassword } from "./userPassword";
-import { Guard } from "../core/logic/Guard";
+import { Guard } from "../../core/logic/Guard";
 
 
 interface UserProps {
@@ -44,7 +44,7 @@ export class User extends AggregateRoot<UserProps> {
   get role (): Role {
     return this.props.role;
   }
-  
+
   set role (value: Role) {
       this.props.role = value;
   }
@@ -66,7 +66,7 @@ export class User extends AggregateRoot<UserProps> {
 
     if (!guardResult.succeeded) {
       return Result.fail<User>(guardResult.message)
-    }     
+    }
     else {
       const user = new User({
         ...props

@@ -2,10 +2,11 @@ import { Container} from 'typedi';
 
 import winston from 'winston';
 
-import config from '../../../config';
+import config from '../../../../config';
 
-import IUserRepo from '../../services/IRepos/IUserRepo';
+import IUserRepo from '@/repos/IRepos/IUserRepo';
 import { Request } from 'express';
+import { UserMapper } from '@/mappers/UserMapper';
 
 /**
  * Attach user to req.user
@@ -16,17 +17,18 @@ import { Request } from 'express';
 const attachCurrentUser = async (req:Request, res, next) => {
   const Logger = Container.get('logger') as winston.Logger;
   try {
-    
+
     const userRepo = Container.get(config.repos.user.name) as IUserRepo
 
     if( !req.auth || req.auth == undefined )
       next( new Error("Token inexistente ou inválido ") );
 
-    const id = req.auth.id;
+    const email = req.auth.email;
 
-    const isFound = await userRepo.exists( id );
+    const isFound = await userRepo.findByEmail( email );
 
     if (isFound){
+      req.user = UserMapper.toResponse( isFound );
       next();
     }
     else

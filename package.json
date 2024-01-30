@@ -7,6 +7,8 @@
     "build": "tsc",
     "heroku-postbuild": "npm run build",
     "start": "nodemon",
+    "bootstrap": "nodemon --bootstrap",
+    "bootstrap:only": "nodemon --bootstrap-only",
     "inspect": "nodemon --inspect src/app.ts",
     "test": "jest",
     "lint": "npm run lint:js ",

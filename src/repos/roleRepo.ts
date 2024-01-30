@@ -1,12 +1,12 @@
 import { Service, Inject } from 'typedi';
 
-import IRoleRepo from "../services/IRepos/IRoleRepo";
-import { Role } from "../domain/role";
-import { RoleId } from "../domain/roleId";
+import IRoleRepo from "@/repos/IRepos/IRoleRepo";
+import { Role } from "../domain/role/role";
+import { RoleId } from "../domain/role/roleId";
 import { RoleMap } from "../mappers/RoleMap";
 
 import { Document, FilterQuery, Model } from 'mongoose';
-import { IRolePersistence } from '../dataschema/IRolePersistence';
+import { IRolePersistence } from '@/persistence/dataschema/IRolePersistence';
 
 @Service()
 export default class RoleRepo implements IRoleRepo {
@@ -23,17 +23,17 @@ export default class RoleRepo implements IRoleRepo {
   }
 
   public async exists(role: Role): Promise<boolean> {
-    
+
     const idX = role.id instanceof RoleId ? (<RoleId>role.id).toValue() : role.id;
 
-    const query = { domainId: idX}; 
+    const query = { domainId: idX};
     const roleDocument = await this.roleSchema.findOne( query as FilterQuery<IRolePersistence & Document>);
 
     return !!roleDocument === true;
   }
 
   public async save (role: Role): Promise<Role> {
-    const query = { domainId: role.id.toString()}; 
+    const query = { domainId: role.id.toString()};
 
     const roleDocument = await this.roleSchema.findOne( query );
 

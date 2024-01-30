@@ -1,15 +1,15 @@
 import { Mapper } from "../core/infra/Mapper";
 
 import { Document, Model } from 'mongoose';
-import { IRolePersistence } from '../dataschema/IRolePersistence';
+import { IRolePersistence } from '@/persistence/dataschema/IRolePersistence';
 
 import IRoleDTO from "../dto/IRoleDTO";
-import { Role } from "../domain/role";
+import { Role } from "../domain/role/role";
 
 import { UniqueEntityID } from "../core/domain/UniqueEntityID";
 
 export class RoleMap extends Mapper<Role> {
-  
+
   public static toDTO( role: Role): IRoleDTO {
     return {
       id: role.id.toString(),

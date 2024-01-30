@@ -17,7 +17,7 @@ export default class RoleController implements IRoleController /* TODO: extends 
   public async createRole(req: Request, res: Response, next: NextFunction) {
     try {
       const roleOrError = await this.roleServiceInstance.createRole(req.body as IRoleDTO) as Result<IRoleDTO>;
-        
+
       if (roleOrError.isFailure) {
         return res.status(402).send();
       }
